@@ -10,7 +10,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
-import java.util.Random
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -24,6 +25,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     )
     var mySensorManager: SensorManager? = null
     var myAccelerometer: Sensor? = null
+    var mAccel: Double = 0.0
+    var mAccelCurrent: Double = 0.0
+    var mAccelLast: Double = 0.0
+    var mGravity = FloatArray(3)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val shake: Button =
                 findViewById(R.id.button)
             predictionText.text = myStrings[indexPoint]
+
             shake.setOnClickListener {
                 indexPoint = (0..9).random()
                 predictionText.text = myStrings[indexPoint]
@@ -58,9 +64,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         // This is the function that will be updated every time our
         // accelerometer sends an update to our app
-        Log.d("EXAMPLE_UTIL", "X Reading: " + event!!.values[0].toString())
-        Log.d("EXAMPLE_UTIL", "Y Reading: " + event!!.values[1].toString())
-        Log.d("EXAMPLE_UTIL", "Z Reading: " + event!!.values[2].toString())
+        if(event!!.sensor.type == Sensor.TYPE_ACCELEROMETER){
+            mGravity = event.values.clone();
+
+            var x = mGravity[0].toDouble();
+            var y = mGravity[1].toDouble();
+            var z = mGravity[2].toDouble();
+            mAccelLast = mAccelCurrent;
+            mAccelCurrent = Math.sqrt(x * x + y * y + z * z)
+            var delta = mAccelCurrent - mAccelLast
+            mAccel = mAccel * 0.9f + delta
+            if(mAccel > 1.5)
+            {
+
+            }
+
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
