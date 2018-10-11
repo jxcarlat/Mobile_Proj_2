@@ -10,8 +10,10 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import java.lang.Math.abs
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.system.measureTimeMillis
 
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -64,19 +66,37 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         // This is the function that will be updated every time our
         // accelerometer sends an update to our app
+        var currentTime: Long = System.currentTimeMillis()
+        Log.d("My log", currentTime.toString())
         if(event!!.sensor.type == Sensor.TYPE_ACCELEROMETER){
             mGravity = event.values.clone();
-
-            var x = mGravity[0].toDouble();
-            var y = mGravity[1].toDouble();
-            var z = mGravity[2].toDouble();
+            var lastX = 0.0
+            var lastY = 0.0
+            var lastZ = 0.0
+            var lastTime: Long = 0
+            var x = mGravity[0].toDouble()
+            var y = mGravity[1].toDouble()
+            var z = mGravity[2].toDouble()
             mAccelLast = mAccelCurrent;
             mAccelCurrent = Math.sqrt(x * x + y * y + z * z)
             var delta = mAccelCurrent - mAccelLast
             mAccel = mAccel * 0.9f + delta
-            if(mAccel > 1.5)
+            if(currentTime - lastTime > 1000)
             {
-
+                x = mGravity[0].toDouble()
+                y = mGravity[1].toDouble()
+                z = mGravity[2].toDouble()
+                val changeInPosition = abs(x+y+z-lastX-lastY-lastZ)
+                val changeInTime = currentTime - lastTime
+                val speed = changeInPosition / changeInTime
+                if(speed > 10000)
+                {
+                    indexPoint = (0..9).random()
+                    predictionText.text = myStrings[indexPoint]
+                }
+                lastX = x
+                lastY = y
+                lastZ = z
             }
 
         }
